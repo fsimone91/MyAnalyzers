@@ -1,0 +1,725 @@
+//Package:    ME0PhiAnalyzer
+// Class:      ME0PhiAnalyzer
+// 
+/**\class ME0PhiAnalyzer ME0PhiAnalyzer.cc ME0PhiAnalyzer/ME0PhiAnalyzer/plugins/ME0PhiAnalyzer.cc
+ 
+ Description: [one line class summary]
+ 
+ Implementation:
+ [Notes on implementation]
+ */
+//
+// Original Author:  
+//         Created:  Fri, 09 Oct 2015 10:34:53 GMT
+// $Id$
+//
+//
+
+
+// system include files
+#include <memory>
+#include <algorithm>
+#include <iostream>
+// user include files
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/EDAnalyzer.h"
+
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "RecoMuon/MuonIdentification/interface/ME0MuonSelector.h"
+#include <DataFormats/MuonReco/interface/ME0Muon.h>
+#include <DataFormats/MuonReco/interface/Muon.h>
+#include <DataFormats/MuonReco/interface/ME0MuonCollection.h>
+#include <DataFormats/GEMRecHit/interface/ME0RecHit.h>
+#include "DataFormats/MuonDetId/interface/GEMDetId.h"
+#include "DataFormats/GEMRecHit/interface/ME0RecHitCollection.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+#include "DataFormats/Math/interface/deltaR.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+
+#include "DataFormats/GeometrySurface/interface/LocalError.h"
+#include "DataFormats/GeometryVector/interface/LocalPoint.h"
+#include "DataFormats/Scalers/interface/DcsStatus.h"
+#include "DataFormats/Common/interface/Handle.h"
+#include "DataFormats/Math/interface/deltaPhi.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
+//Geom
+#include "Geometry/Records/interface/MuonGeometryRecord.h"
+#include "Geometry/CommonDetUnit/interface/GeomDet.h"
+#include "Geometry/GEMGeometry/interface/ME0Geometry.h"
+#include <Geometry/GEMGeometry/interface/ME0EtaPartition.h>
+#include <DataFormats/MuonDetId/interface/ME0DetId.h>
+
+#include "Geometry/GEMGeometry/interface/GEMEtaPartition.h"
+#include "Geometry/GEMGeometry/interface/GEMEtaPartitionSpecs.h"
+#include "Geometry/CommonTopologies/interface/StripTopology.h"
+
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "RecoMuon/MuonIdentification/plugins/ME0MuonSelector.cc"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "TFile.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TTree.h"
+#include <memory>
+#include <vector>
+#include <cmath>
+#include "TLorentzVector.h"
+//
+// class declaration
+//
+using namespace std;
+class ME0PhiAnalyzer : public edm::EDAnalyzer {
+public:
+	explicit ME0PhiAnalyzer(const edm::ParameterSet&);
+	~ME0PhiAnalyzer();
+	void Initialize(); 
+	
+	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+	
+	
+private:
+	virtual void beginJob() override;
+	virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+	virtual void endJob() override;
+	std::string wp_;
+	double timeMin_;
+	double timeMax_;
+	
+	edm::Service<TFileService> fs;
+	
+	TH1F *hNEvZmm;  TH1F * hDPhi; TH1F *  hme0machtMuonPt;  TH1F *  hme0machtMuonEta;  TH1F *  hme0machtMuonPhi;  TH1F *  hme0machtMuonCharge;
+	TH1F *  hNME0Time ;  TH1F *  hNME0RecHits; TH1F *  hPtRes ;  
+	TH1F *  hNzmm;  TH1F *  hNEv;  TH1F *hNGenMu;  TH1F * hNME0Mu;  TH1F *   hNMatchME0Mu;
+	
+	TH2F *  hPtVSDphi; TH2F *  hPVSDphi ;  TH2F *   hPtVSDX;  TH2F *   hPtVSDY;  TH2F *   hPtVSDXLocal;  TH2F *   hPtVSDYLocal; TH2F *  hPtResVSDPhi;  
+	
+	TH1F *   hDPhi_pt0To5;  TH1F *   hDPhi_pt5To10;  TH1F *   hDPhi_pt10To20; TH1F *   hDPhi_pt20To40;  TH1F *   hDPhi_pt40;
+	TH1F *   hGenMuPt; TH1F *   hGenMuEta;
+	TH1F *   hNumTight_Pt; TH1F *   hNumTight_Eta; TH1F *   hNumLoose_Pt; TH1F *   hNumLoose_Eta; TH1F *   hNumNoID_Eta; TH1F *   hNumNoID_Pt; 
+	TH1F *   hGenMass;  TH1F *   hRecoMass; TH1F *   hRecoMassIntime;	TH1F * 	hRecoMass_matchID;
+	/*  TFile* rootfile;
+	 TTree* mytree;
+	 //====================================================
+	 //
+	 //    Create variable for Nb of event,run,lumi
+	 //
+	 //====================================================
+	 int Run;
+	 int Event;
+	 int Lumi;
+	 int Bunch;
+	 std::vector<float> GenMuPt ,  GenMuEta,  GenMuPhi,  GenMuPdgId,  GenMuCharge;
+	 int NGenMu, NMe0Mu;
+	 */
+	
+	
+	// virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
+	//virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
+	//virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+	//virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+	
+	// ----------member data ---------------------------
+};
+
+//
+// constants, enums and typedefs
+//
+
+//
+// static data member definitions
+//
+
+//
+// constructors and destructor
+//
+ME0PhiAnalyzer::ME0PhiAnalyzer(const edm::ParameterSet& iConfig):
+wp_(iConfig.getParameter<std::string>("wp")),
+timeMin_(iConfig.getParameter<double>("timeMin")),
+timeMax_(iConfig.getParameter<double>("timeMax"))
+
+{
+	//now do what ever initialization is needed
+	//rootfile = new TFile("ms.root","RECREATE");
+}
+
+
+ME0PhiAnalyzer::~ME0PhiAnalyzer()
+{
+	
+	// do anything here that needs to be done at desctruction time
+	// (e.g. close files, deallocate resources etc.)
+	
+}
+
+
+
+/*
+ void ME0PhiAnalyzer::Initialize()
+ {
+ 
+ //now do what ever initialization is needed
+ Run       = -999;
+ Event     = -999;
+ Lumi      = -999;
+ Bunch     = -999;
+ GenMuPt.clear();
+ GenMuEta.clear();
+ GenMuPhi.clear();
+ GenMuPdgId.clear();
+ GenMuCharge.clear();
+ 
+ NGenMu  = -999;
+ NMe0Mu  = -999;
+ }
+ */
+
+void
+ME0PhiAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+	//Initialize();
+	using namespace edm;
+	
+	edm::Handle <std::vector<reco::ME0Muon> > OurMuons;
+	iEvent.getByLabel <std::vector<reco::ME0Muon> > ("me0SegmentMatching", OurMuons);
+	
+	edm::Handle<ME0SegmentCollection> me0Segments;
+	iEvent.getByLabel("me0Segments", me0Segments);
+	
+	edm::Handle <reco::GenParticleCollection> genparticles;
+	iEvent.getByLabel("genParticles",genparticles);
+	
+	edm::Handle <std::vector<reco::Muon> > muons;    
+	iEvent.getByLabel("muons", muons ); 
+	
+	edm::ESHandle<ME0Geometry> me0geom;
+	iSetup.get<MuonGeometryRecord>().get(me0geom);
+	const ME0Geometry* me0Geom;
+	me0Geom= &*me0geom;
+	
+	
+	
+	/*
+	 Run   = iEvent.id().run();
+	 Event = iEvent.id().event();
+	 Lumi  = iEvent.luminosityBlock();
+	 Bunch = iEvent.bunchCrossing();
+	 */
+	
+	std::cout<<"********************************************BeginEvent******************************************** "<<std::endl;
+	std::vector<int> indexgenmu;
+	hNEv->Fill(1);  
+	
+	for(unsigned int i = 0; i < genparticles->size();i++) {
+		// if(genparticles->at(i).numberOfMothers() > 0){ std::cout<<i<<" particle= "<<genparticles->at(i).pdgId()<<" status="<<genparticles->at(i).status()<<" eta="<<genparticles->at(i).eta()<<" phi="<<genparticles->at(i).phi()<<" pt="<<genparticles->at(i).pt()<<" mother="<<genparticles->at(i).mother()->pdgId()<<std::endl;}
+		//if(!(fabs(genparticles->at(i).eta())  < 3.)) continue;
+		//if((abs(genparticles->at(i).pdgId()) == 13)){
+		if((abs(genparticles->at(i).pdgId()) == 13) && (genparticles->at(i).status() == 1) && (genparticles->at(i).numberOfMothers() > 0)) {
+			
+			if(fabs(genparticles->at(i).mother()->pdgId()) == 23) {
+				indexgenmu.push_back(i); 
+				
+			}
+			else if(abs(genparticles->at(i).pdgId()) == abs(genparticles->at(i).mother()->pdgId())) {
+				
+				if(genparticles->at(i).mother()->numberOfMothers() > 0) {
+					
+					if(abs(genparticles->at(i).mother()->mother()->pdgId()) == 23) {
+						indexgenmu.push_back(i); }
+				}
+				
+				if(genparticles->at(i).mother()->mother()->numberOfMothers() > 0) {
+					
+					if(abs(genparticles->at(i).mother()->mother()->mother()->pdgId()) == 23) {
+						indexgenmu.push_back(i);}
+				}
+				
+				if(genparticles->at(i).mother()->mother()->mother() ->numberOfMothers() > 0) {
+					
+					if(abs(genparticles->at(i).mother()->mother()->mother()->mother()->pdgId()) == 23 || fabs(genparticles->at(i).mother()->pdgId()) == 22) {
+					indexgenmu.push_back(i);}
+					
+				}
+			}//genealogia
+		}//mu status 1
+	}//filtro eventi
+	
+	std::cout<< "N gen muon " << indexgenmu.size() << std::endl;
+	std::cout<< "N me0 muon " << OurMuons->size() << std::endl;
+	
+	int counterZmm =0;
+	if (indexgenmu.size()>0) {counterZmm ++; hNzmm->Fill(1);}
+	
+	std::vector<int>  indexGenMuInME0;
+	std::vector<int>  indexGenMuElseWhere;
+	std::vector<int>  indexRecoMuElseWhere;
+	
+	for(uint i =0; i<indexgenmu.size(); i++){
+		if((abs(genparticles->at(indexgenmu[i]).eta())<2.8 ) && ( (genparticles->at(indexgenmu[i]).eta()>2)||(genparticles->at(indexgenmu[i]).eta()< (-2)) )  ){
+			indexGenMuInME0.push_back(indexgenmu[i]);
+			// std::cout<<" status3 only;  "<<i<<" particle= "<<genparticles->at(indexgenmu[i]).pdgId()<<" status="<<genparticles->at(indexgenmu[i]).status()<<" eta="<<genparticles->at(indexgenmu[i]).eta()<<" phi="<<genparticles->at(indexgenmu[i]).phi()<<" pt="<<genparticles->at(indexgenmu[i]).pt()<<std::endl;
+			if(genparticles->at(indexgenmu[i]).pt()>5) hGenMuEta->Fill( abs(genparticles->at(indexgenmu[i]).eta())  );
+			hGenMuPt->Fill( abs(genparticles->at(indexgenmu[i]).pt())  );
+		}else{
+			indexGenMuElseWhere.push_back(indexgenmu[i]);
+		}
+	}
+	
+	std::cout<< "N gen muon in me0 " << indexGenMuInME0.size() << std::endl;
+	TLorentzVector genmu1, genmu2, genZ;
+	TLorentzVector recomu1, recomu2, recoZ;
+	TLorentzVector recomu1Intime, recomu2Intime, recoZIntime;
+	
+	if ( indexGenMuInME0.size() ==2){
+		genmu1.SetPtEtaPhiM(genparticles->at(indexGenMuInME0[0]).pt(),genparticles->at(indexGenMuInME0[0]).eta(), genparticles->at(indexGenMuInME0[0]).phi(), 0.105   );
+		genmu2.SetPtEtaPhiM(genparticles->at(indexGenMuInME0[1]).pt(),genparticles->at(indexGenMuInME0[1]).eta(), genparticles->at(indexGenMuInME0[1]).phi(), 0.105   );
+		genZ = genmu1 +genmu2;
+		std::cout<<" gen pt1="<<genmu1.Pt()<<" eta="<<genmu1.Eta()<<std::endl;
+		std::cout<<" gen pt2="<<genmu2.Pt()<<" eta="<<genmu2.Eta()<<std::endl;
+		hGenMass->Fill(genZ.M());
+		}
+		
+		std::vector<int> me0muons,me0muonsIntime, muonPtidx;
+		float pt_tmp =0.000001;
+		for(unsigned int t = 0; t < OurMuons->size(); t++) {
+			
+			bool isLoose = muon::isGoodMuon(me0geom, OurMuons->at(t), muon::Loose);
+			bool isTight = muon::isGoodMuon(me0geom, OurMuons->at(t), muon::Tight);
+			
+			bool IDwp =   (wp_ == "loose") ? isLoose : isTight;
+			
+			if (!IDwp) continue;  
+			
+			//std::cout<<t<<" pt before ="<<OurMuons->at(t).pt()<<std::endl;
+			if(OurMuons->at(t).pt() > pt_tmp ){
+				pt_tmp = OurMuons->at(t).pt();
+				//   std::cout<<t<<" pttmp="<<pt_tmp<<std::endl;
+				muonPtidx.push_back(t);
+				
+			}
+			me0muons.push_back(t);
+		}
+		
+		std::cout<<" # me0mu after ID " << me0muons.size()<<" #me0mu after sorting  "<<muonPtidx.size()<<std::endl;
+		for (uint i=0; i<muonPtidx.size();i++){
+			int t = muonPtidx[i];
+			//std::cout<<t<<"------- pt="<<OurMuons->at(t).pt()<<" eta="<<OurMuons->at(t).eta()<<std::endl;
+			/* for (uint k=0; k<muonPtidx.size();k++){
+			 if(!(k==t))continue;
+			 int m = = muonPtidx[k];
+			 if( OurMuons->at(muonPtidx[t]).charge() + OurMuons->at(muonPtidx[m]).charge() ==0  )  
+			 }*/
+			if(OurMuons->at(t).me0segment().time() >= timeMin_ && OurMuons->at(t).me0segment().time() <= timeMax_)  me0muonsIntime.push_back(t);
+		}
+		
+		int N_muID = muonPtidx.size()-1;
+		int N_muID_it = me0muonsIntime.size()-1;
+		if( muonPtidx.size()>1){
+			recomu1.SetPtEtaPhiM(OurMuons->at(muonPtidx[N_muID]).pt(),OurMuons->at(muonPtidx[N_muID]).eta(),OurMuons->at(muonPtidx[N_muID]).phi(), 0.105);
+			recomu2.SetPtEtaPhiM(OurMuons->at(muonPtidx[N_muID-1]).pt(),OurMuons->at(muonPtidx[N_muID-1]).eta(),OurMuons->at(muonPtidx[N_muID-1]).phi(), 0.105);
+			recoZ = recomu1 +recomu2 ;
+			//std::cout<<" recomu1 pt="<<recomu1.Pt()<<" recomu2 pt="<<recomu2.Pt()<<std::endl;
+		}
+		//std::cout<<"#me0 mu in time  "<<me0muonsIntime.size()<<std::endl;
+		if(me0muonsIntime.size()>1){
+			recomu1Intime.SetPtEtaPhiM(OurMuons->at(me0muonsIntime[N_muID_it]).pt(),OurMuons->at(me0muonsIntime[N_muID_it]).eta(),OurMuons->at(me0muonsIntime[N_muID_it]).phi(), 0.105);
+			recomu2Intime.SetPtEtaPhiM(OurMuons->at(me0muonsIntime[N_muID_it-1]).pt(),OurMuons->at(me0muonsIntime[N_muID_it-1]).eta(),OurMuons->at(me0muonsIntime[N_muID_it-1]).phi(), 0.105);
+			recoZIntime = recomu1Intime +recomu2Intime ;
+		}
+		if (muonPtidx.size()>1 &&  indexGenMuInME0.size() ==2) hRecoMass->Fill(recoZ.M());
+		if (me0muonsIntime.size()>1 &&  indexGenMuInME0.size() ==2) hRecoMassIntime->Fill(recoZIntime.M());
+		
+
+	///find the muon in the barrel when one mu is in me0 an the other muon is elsewhere
+	
+	/*
+	 unsigned int kk=0;
+	 if(indexGenMuInME0.size()==1 && indexGenMuElseWhere.size()==1){
+	 //  for(uint i =0; i<indexgenmu.size(); i++){
+	 //  std::cout<<"idx="<<indexgenmu[i]<<" eta="<<genparticles->at(indexgenmu[i]).eta()<<std::endl;
+	 // }
+	 for ( std::vector<reco::Muon>::const_iterator mu = muons->begin(); mu != muons->end(); ++mu, ++kk){
+	 double DRmintmp = 0.1;
+	 double drreco =  reco::deltaR(genparticles->at(indexGenMuElseWhere[0]),*mu);
+	 if(drreco<DRmintmp){
+	 DRmintmp = drreco;
+	 indexRecoMuElseWhere.push_back(kk);
+	 std::cout<<" dr reco  nel barrel "<<drreco<<" idx reco "<<kk<<std::endl;
+	 }
+	 }
+	 
+	 }//evento con un genmu nel barrel
+	 */
+	hNGenMu->Fill(indexgenmu.size());
+	hNME0Mu->Fill(OurMuons->size());
+	
+	unsigned int k = 0;
+	std::vector<double>   me0SegDPhi;
+	std::vector<int>  idxtmpreco;
+	std::vector<uint>  idxtmpgen;
+	
+	//find all the me0 muon next to the genMuon in DR<0.1
+	for ( std::vector<reco::ME0Muon>::const_iterator thisMuon = OurMuons->begin(); thisMuon != OurMuons->end(); ++thisMuon, ++k){
+		
+		for(unsigned int i = 0; i<indexgenmu.size(); i++){
+			int m = indexgenmu.at(i);
+			// std::cout<<i<<" particle= "<<genparticles->at(m).pdgId()<<" status="<<genparticles->at(m).status()<<"  pt= "<<genparticles->at(m).pt()<<" eta="<<genparticles->at(m).eta()<<std::endl;
+			double dr= reco::deltaR(genparticles->at(m),*thisMuon);
+			if(dr < 0.25) {
+				idxtmpreco.push_back(k);
+				idxtmpgen.push_back(m);
+				// std::cout<<" DR genmu, me0mu "<< dr <<std::endl;
+			}
+			
+		}//dr gen particle
+		
+	}//me0muon loop
+	
+	
+	std::cout<<" genmu in 0.1   "<<indexgenmu.size()<<std::endl;
+	std::cout<<" recomu in 0.1  "<<idxtmpreco.size()<<std::endl;
+	
+	//find the nearest me0 muon to the genMu and double-check that dist<0.1
+	std::vector<int> minDRgen;
+	std::vector<int> minDRreco;
+	std::vector<int> bkgidx;
+	for(uint k =0; k<indexgenmu.size(); k++){
+		double drprova = 5;
+		int idxprovagen =-99;
+		int idxprovareco =-99;
+		
+		for(uint i =0; i<idxtmpreco.size(); i++){
+			double drnew= reco::deltaR(genparticles->at(indexgenmu[k]),OurMuons->at(idxtmpreco[i]));
+			//std::cout<<"gen idx="<<indexgenmu.at(k)<<"  reco idx="<<idxtmpreco.at(i)<<" DR matched mu  "<<drnew<<std::endl;
+			if(drnew<drprova){
+				drprova = drnew;
+				idxprovagen = indexgenmu.at(k);
+				idxprovareco = idxtmpreco.at(i);
+				//  std::cout<<" drprova "<<drprova<<" idx reco "<<idxprovareco<<"  idxgen "<<idxprovagen<<std::endl;
+				
+			}
+		}
+		//std::cout<<" DR MINIMO DELLE MIE PALLE "<< drprova<<" idx gen "<<idxprovagen<<" idx reco  "<<idxprovareco<<std::endl;
+		if(drprova<0.25){
+			minDRreco.push_back(idxprovareco);
+			minDRgen.push_back(idxprovagen);
+		}
+		
+	}	    
+	
+	
+	///verify matched muons with minDR
+	std::cout<< "N me0 matched muon " <<  minDRreco.size() << std::endl;
+	hNMatchME0Mu->Fill(minDRreco.size());
+	
+	////////Loop on me0 matched muons
+	std::vector<int> idxMatchME0id;
+	for(unsigned int m=0;m< minDRreco.size();m++ ){
+		int me0idx =  minDRreco.at(m);
+		if(genparticles->at(minDRgen[m]).pt()>5)  hNumNoID_Eta->Fill(abs(genparticles->at(minDRgen[m]).eta()));
+		hNumNoID_Pt->Fill(genparticles->at(minDRgen[m]).pt());
+		
+		/*	  for(unsigned int j=m+1;j<me0matchedindex.size();j++ ){
+		 int me0idx2 = me0matchedindex.at(j);
+		 double DRreco =reco::deltaR(OurMuons->at(me0idx2),OurMuons->at(me0idx));
+		 //    std::cout<<j<<" DR reco  "<<DRreco<<std::endl;
+		 }
+		 */
+		
+		
+		if ( (muon::isGoodMuon(me0Geom, OurMuons->at(me0idx) , muon::Tight))){
+			if(genparticles->at(minDRgen[m]).pt()>5) hNumTight_Eta->Fill(abs(genparticles->at(minDRgen[m]).eta()));
+			hNumTight_Pt->Fill(genparticles->at(minDRgen[m]).pt());
+		}
+		if ( (muon::isGoodMuon(me0Geom,  OurMuons->at(me0idx), muon::Loose) )){
+			if(genparticles->at(minDRgen[m]).pt()>5) hNumLoose_Eta->Fill(abs(genparticles->at(minDRgen[m]).eta()));
+			hNumLoose_Pt->Fill(genparticles->at(minDRgen[m]).pt());
+		}
+		
+		// if(! (muon::isGoodMuon(me0Geom, OurMuons->at(me0idx) , muon::Tight) )) continue;
+		bool isLoose = muon::isGoodMuon(me0geom, OurMuons->at(me0idx), muon::Loose);
+		bool isTight = muon::isGoodMuon(me0geom, OurMuons->at(me0idx), muon::Tight);
+		
+		bool IDwp =   (wp_ == "loose") ? isLoose : isTight;
+		
+		if (!IDwp) continue;
+		
+		idxMatchME0id.push_back(me0idx);
+		
+		hme0machtMuonPt->Fill(OurMuons->at(me0idx).pt());	
+		hme0machtMuonEta->Fill(OurMuons->at(me0idx).eta());	
+		hme0machtMuonPhi->Fill(OurMuons->at(me0idx).phi());	
+		hme0machtMuonCharge->Fill(OurMuons->at(me0idx).charge());	
+		//int SegId=OurMuons->at(me0idx).me0segid();
+		//std::cout<<" me0 mu eta "<<OurMuons->at(me0idx).eta()<<"  segID "<<SegId<<std::endl;
+		//ME0DetId id = (OurMuons->at(me0idx).me0segment()).me0DetId();
+		//std::cout <<" Original ME0DetID "<<id<<std::endl;
+		auto me0rhs =  (OurMuons->at(me0idx).me0segment()).specificRecHits();
+		//std::cout <<m<<" ME0 Ensamble Det Id "<<id<<" Number of RecHits "<<me0rhs.size()<<std::endl;
+		hNME0Time->Fill((OurMuons->at(me0idx).me0segment()).time());
+		hNME0RecHits->Fill(me0rhs.size());
+		//for each segment, loop over the rechits
+		int  hitCounter=0;
+		std::vector<double>   me0RHPhi;
+		std::vector<double>   me0RHX;
+		std::vector<double>   me0RHY;
+		std::vector<double>   me0RHXlocal;
+		std::vector<double>   me0RHYlocal;
+		for (auto rh = me0rhs.begin(); rh!= me0rhs.end(); rh++){
+			hitCounter++;
+			auto rhLP = rh->localPosition();
+			double localX = rhLP.x();
+			double localY = rhLP.y();
+			
+			auto me0id = rh->me0Id();
+			
+			//this gives you error, it seems due to the geometry-->solved if you run on amandeep's files
+			
+			auto rhr = me0Geom->etaPartition(me0id);
+			auto rhGP = rhr->toGlobal(rhLP);
+			//	    double globalEta = rhGP.eta();
+			double globalPhi = rhGP.phi();
+			double globalX = rhGP.x();
+			double globalY = rhGP.y();
+			/*double globalR = rhGP.perp();
+			 double globalZ = rhGP.z();*/
+			
+			//	    std::cout<< hitCounter<<" rechit global phi="<< globalPhi<<" global eta="<<globalEta<<" local x="<<localX<<" local Y="<<localY<<" rechit layer "<< me0id.layer()<<std::endl;
+			//	    std::cout<< hitCounter<<" rechit local  x="<< rhLP.x() <<" local y="<< rhLP.y()<<"layer  "<< me0id.layer()<<<std::endl;
+			me0RHPhi.push_back(globalPhi);
+			
+			me0RHX.push_back(globalX);
+			me0RHY.push_back(globalY);
+			
+			me0RHXlocal.push_back(localX);
+			me0RHYlocal.push_back(localY);
+		}	 
+		
+		int numRH=me0RHPhi.size();
+		/*	  int numRHLocalX=me0RHXlocal.size();
+		 
+		 std::cout<<" DeltaPhi  "<<TMath::Abs(me0RHPhi.at(0)-me0RHPhi.at(numRH-1))<<" sim pt  "<<genparticles->at(minDRgen[m]).pt()<<std::endl;
+		 std::cout<<" DeltaX  "<<TMath::Abs(me0RHX.at(0)-me0RHX.at(numRH-1))<<" sim pt  "<<genparticles->at(minDRgen[m]).pt()<<std::endl;
+		 std::cout<<" DeltaX  local="<<TMath::Abs(me0RHXlocal.at(0)-me0RHXlocal.at(numRHLocalX-1))<<" sim pt  "<<genparticles->at(minDRgen[m]).pt()<<std::endl;
+		 */
+		me0SegDPhi.push_back(TMath::Abs(me0RHPhi.at(0)-me0RHPhi.at(numRH-1)));
+		//std::cout<<" DeltaPhi  "<<me0SegDPhi.at(me0idx)<<" pt gen mu  "<<genparticles->at(m).pt()<<std::endl;
+		hDPhi->Fill(TMath::Abs(me0RHPhi.at(0)-me0RHPhi.at(numRH-1)));
+		
+		hPtVSDphi->Fill( TMath::Abs(me0RHPhi.at(0)-me0RHPhi.at(numRH-1)), genparticles->at(minDRgen[m]).pt()  );
+		
+		hPVSDphi->Fill( TMath::Abs(me0RHPhi.at(0)-me0RHPhi.at(numRH-1)), genparticles->at(minDRgen[m]).p()  );
+		
+		hPtVSDX->Fill( TMath::Abs(me0RHX.at(0)-me0RHX.at(numRH-1)), genparticles->at(minDRgen[m]).pt()  );
+		hPtVSDY->Fill( TMath::Abs(me0RHY.at(0)-me0RHY.at(numRH-1)), genparticles->at(minDRgen[m]).pt()  );
+		
+		
+		hPtVSDXLocal->Fill( TMath::Abs(me0RHXlocal.at(0)-me0RHXlocal.at(numRH-1)), genparticles->at(minDRgen[m]).pt()  );
+		hPtVSDYLocal->Fill( TMath::Abs(me0RHYlocal.at(0)-me0RHYlocal.at(numRH-1)), genparticles->at(minDRgen[m]).pt()  );
+		
+		
+		if(genparticles->at(minDRgen[m]).pt()<5) hDPhi_pt0To5->Fill(TMath::Abs(me0RHPhi.at(0)-me0RHPhi.at(numRH-1)));
+		if(genparticles->at(minDRgen[m]).pt()>=5 && genparticles->at(minDRgen[m]).pt()<10) hDPhi_pt5To10->Fill(TMath::Abs(me0RHPhi.at(0)-me0RHPhi.at(numRH-1)));
+		if(genparticles->at(minDRgen[m]).pt()>=10 && genparticles->at(minDRgen[m]).pt()<20) hDPhi_pt10To20->Fill(TMath::Abs(me0RHPhi.at(0)-me0RHPhi.at(numRH-1)));
+		
+		if(genparticles->at(minDRgen[m]).pt()>=20 && genparticles->at(minDRgen[m]).pt()<40) hDPhi_pt20To40->Fill(TMath::Abs(me0RHPhi.at(0)-me0RHPhi.at(numRH-1)));
+		if(genparticles->at(minDRgen[m]).pt()>=40 ) hDPhi_pt40->Fill(TMath::Abs(me0RHPhi.at(0)-me0RHPhi.at(numRH-1)));
+		
+		hPtRes->Fill((genparticles->at(minDRgen[m]).pt() - OurMuons->at(me0idx).pt())/genparticles->at(minDRgen[m]).pt());
+		hPtResVSDPhi->Fill(TMath::Abs(me0RHPhi.at(0)-me0RHPhi.at(numRH-1))   ,(genparticles->at(minDRgen[m]).pt() - OurMuons->at(me0idx).pt())/genparticles->at(minDRgen[m]).pt());
+		
+	}//fine loop me0 muon matchati
+	
+	hNEvZmm->Fill(counterZmm); 
+	
+	///////////////////////////////////////////////////////////MASS PLOTS////////////////////////////////////////////////////
+	float pt_tmpM = 0.00000000000000001;
+	std::vector<int> me0matchID_pT;
+	TLorentzVector recomu1_MatchID, recomu2_MatchID;
+	for(unsigned int m=0;m< idxMatchME0id.size();m++ ){
+		int t = idxMatchME0id.at(m);
+		
+		//std::cout<<t<<" pt before ="<<OurMuons->at(t).pt()<<std::endl;
+		if(OurMuons->at(t).pt() > pt_tmpM ){ //pT order
+			pt_tmpM = OurMuons->at(t).pt();
+			//   std::cout<<t<<" pttmp="<<pt_tmp<<std::endl;
+			me0matchID_pT.push_back(t);
+		}
+	}
+	std::cout<<" #me0 before sorting="<< idxMatchME0id.size()<< "  #me0 after sorting="<<me0matchID_pT.size()<<std::endl;
+	int recoIDsize =  me0matchID_pT.size() -1;
+	
+	
+	if(indexGenMuInME0.size()==2 && me0matchID_pT.size()>1 ){
+		recomu1_MatchID.SetPtEtaPhiM(OurMuons->at(me0matchID_pT[recoIDsize]).pt(), OurMuons->at(me0matchID_pT[recoIDsize]).eta(), OurMuons->at(me0matchID_pT[recoIDsize]).phi(), 0.105  );
+		recomu2_MatchID.SetPtEtaPhiM(OurMuons->at(me0matchID_pT[recoIDsize-1]).pt(), OurMuons->at(me0matchID_pT[recoIDsize-1]).eta(), OurMuons->at(me0matchID_pT[recoIDsize-1]).phi(), 0.105  );
+		hRecoMass_matchID->Fill( (recomu1_MatchID + recomu2_MatchID).M());
+	}
+	
+	/*	TLorentzVector recomu_out;
+	 TLorentzVector recomu_inME0;
+	 TLorentzVector ZCand;
+	 TLorentzVector mugen1, mugen2 ,ZCandGen,  recomu1_inME0,  recomu2_inME0;
+	 if(indexGenMuInME0.size()==1 && indexGenMuElseWhere.size()==1 && reco.size()==1 && indexRecoMuElseWhere.size()==1  ){
+	 recomu_out.SetPtEtaPhiE(muons->at(indexRecoMuElseWhere[0]).pt(),muons->at(indexRecoMuElseWhere[0]).eta(), muons->at(indexRecoMuElseWhere[0]).phi(), muons->at(indexRecoMuElseWhere[0]).energy()  );
+	 recomu_inME0.SetPtEtaPhiE(OurMuons->at(minDRreco[0]).pt(),muons->at(minDRreco[0]).eta(), muons->at(minDRreco[0]).phi(), muons->at(minDRreco[0]).energy() );
+	 recomu_out + recomu_inME0;
+	 hRecoMass->Fill(ZCand.M());
+	 
+	 mugen1.SetPtEtaPhiM(genparticles->at(minDRgen[0]).pt(),genparticles->at(minDRgen[0]).eta(),genparticles->at(minDRgen[0]).phi(), 0.105 );
+	 mugen2.SetPtEtaPhiM(genparticles->at(indexGenMuElseWhere[0]).pt(),genparticles->at(indexGenMuElseWhere[0]).eta(),genparticles->at(indexGenMuElseWhere[0]).phi(), 0.105 );
+	 ZCandGen = mugen1 + mugen2;
+	 hGenMass->Fill(ZCandGen.M());
+	 std::cout<<" gen mass "<<ZCandGen.M()<<" reco mass "<<(ZCand.M())<<" eventType=A"<<std::endl; 
+	 }
+	 
+	 if(indexGenMuInME0.size()==0 && indexGenMuElseWhere.size()==2 &&  minDRreco.size()==2){
+	 recomu1_inME0.SetPtEtaPhiE(OurMuons->at(minDRreco[0]).pt(),muons->at(minDRreco[0]).eta(), muons->at(minDRreco[0]).phi(), muons->at(minDRreco[0]).energy() );
+	 recomu2_inME0.SetPtEtaPhiE(OurMuons->at(minDRreco[1]).pt(),muons->at(minDRreco[1]).eta(), muons->at(minDRreco[1]).phi(), muons->at(minDRreco[1]).energy() );
+	 ZCand =  recomu1_inME0 + recomu2_inME0  ;
+	 hRecoMass->Fill(ZCand.M());
+	 
+	 mugen1.SetPtEtaPhiM(genparticles->at(minDRgen[0]).pt(),genparticles->at(minDRgen[0]).eta(),genparticles->at(minDRgen[0]).phi(), 0.105 );
+	 mugen2.SetPtEtaPhiM(genparticles->at(minDRgen[1]).pt(),genparticles->at(minDRgen[1]).eta(),genparticles->at(minDRgen[1]).phi(), 0.105 );
+	 ZCandGen = mugen1 + mugen2;
+	 std::cout<<" gen mass "<<ZCandGen.M()<<" reco mass "<<(ZCand.M())<<"  eventType=B"<<std::endl; 
+	 hGenMass->Fill(ZCandGen.M());
+	 }
+	 */
+}
+
+
+
+// ------------ method called once each job just before starting event loop  ------------
+void 
+ME0PhiAnalyzer::beginJob()
+{
+	hNEvZmm = fs->make<TH1F>("hNEvZmm","hNEvZmm",10,0,10);  
+	hDPhi = fs->make<TH1F>("hDPhi","hDPhi",1000,0,10);  
+	hPtVSDphi = fs->make<TH2F>("hPtVSDphi","hPtVSDphi",1000, 0, 0.01 , 200,0,200); 
+	hme0machtMuonPt = fs->make<TH1F>("hme0machtMuonPt","hme0machtMuonPt",200,0,200);  
+	hme0machtMuonEta= fs->make<TH1F>("hme0machtMuonEta","hme0machtMuonEta",200,-4,4);  
+	hme0machtMuonPhi= fs->make<TH1F>("hme0machtMuonPhi","hme0machtMuonPhi",200,-4,4);  
+	hme0machtMuonCharge= fs->make<TH1F>("hme0machtMuonCharge","hme0machtMuonCharge",10,-5,5);  
+	hNME0Time = fs->make<TH1F>("hNME0Time","hNME0Time",300,0,300);  
+	hNME0RecHits = fs->make<TH1F>("hNME0RecHits","hNME0RecHits",15,0,15); 
+	hPtRes = fs->make<TH1F>("hPtRes","hPtRes",200,-10,10); 
+	hPtResVSDPhi = fs->make<TH2F>("hPtResVSDPhi","hPtResVSDPhi",1000, 0, 0.01 , 200,-10,10); 
+	hNzmm  = fs->make<TH1F>("hNzmm","hNzmm",10,0,10); 
+	hNEv  = fs->make<TH1F>("hNEv","hNEv",10,0,10); 
+	hNGenMu = fs->make<TH1F>("hNGenMu","hNGenMu",10,0,10); 
+	hNME0Mu = fs->make<TH1F>("hNME0Mu","hNME0Mu",10,0,10);
+	hNMatchME0Mu = fs->make<TH1F>("hNMatchME0Mu","hNMatchME0Mu",10,0,10);
+	
+	hPVSDphi  = fs->make<TH2F>("hPVSDPhi","hPVSDPhi",1000, 0, 0.01 , 200,0,200); 
+	
+	hPtVSDX = fs->make<TH2F>("hPtVSDX","hPtVSDX",1000, 0, 10 , 200,0,200); 
+	hPtVSDY = fs->make<TH2F>("hPtVSDY","hPtVSDY",1000, 0, 10 , 200,0,200); 
+	
+	
+	hPtVSDXLocal = fs->make<TH2F>("hPtVSDXLocal","hPtVSDXLocal",1000, 0, 10 , 200,0,200); 
+	hPtVSDYLocal =  fs->make<TH2F>("hPtVSDYLocal","hPtVSDYLocal",1000, 0, 10 , 200,0,200);
+	
+	
+	hDPhi_pt0To5 = fs->make<TH1F>("hDPhi_pt0To5","hDPhi_pt0To5",1000,0,0.01);  
+	hDPhi_pt5To10 = fs->make<TH1F>("hDPhi_pt5To10","hDPhi_pt5To10",1000,0,0.01); 
+	hDPhi_pt10To20= fs->make<TH1F>("hDPhi_pt10To20","hDPhi_pt10To20",1000,0,0.01); 
+	
+	hDPhi_pt20To40= fs->make<TH1F>("hDPhi_pt20To40","hDPhi_pt20To40",1000,0,0.01); 
+	hDPhi_pt40= fs->make<TH1F>("hDPhi_pt40","hDPhi_pt40",1000,0,0.01); 
+	
+	hGenMuPt = fs->make<TH1F>("hGenMuPt","hGenMuPt",200,0,200);
+	hGenMuEta = fs->make<TH1F>("hGenMuEta","hGenMuEta",200,0,4);
+	
+	hNumTight_Pt = fs->make<TH1F>("hNumTight_Pt","hNumTight_Pt",200,0,200);
+	hNumTight_Eta = fs->make<TH1F>("hNumTight_Eta","hNumTight_Eta",200,0,4);
+	hNumLoose_Pt = fs->make<TH1F>("hNumLoose_Pt","hNumLoose_Pt",200,0,200);
+	hNumLoose_Eta = fs->make<TH1F>("hNumLoose_Eta","hNumLoose_Eta",200,0,4);
+	hNumNoID_Eta = fs->make<TH1F>("hNumNoID_Eta","hNumNoID_Eta",200,0,4);
+	hNumNoID_Pt = fs->make<TH1F>("hNumNoID_Pt","hNumNoID_Pt",200,0,200);
+	
+	hGenMass =  fs->make<TH1F>("hGenMass","hGenMass",200,0,200);
+	hRecoMass =  fs->make<TH1F>("hRecoMass","hRecoMass",200,0,200);
+	hRecoMassIntime =  fs->make<TH1F>("hRecoMassIntime","hRecoMassIntime",200,0,200);
+	hRecoMass_matchID = fs->make<TH1F>("hRecoMass_matchID","hRecoMass_matchID",200,0,200);
+	
+	/*  rootfile->cd();
+	 
+	 mytree  = new TTree("tree","tr");
+	 
+	 //=============================================================
+	 //
+	 //           Create Branchs for Nb of event,run,lumi
+	 //
+	 //=============================================================
+	 mytree->Branch("Run",    &Run,   "Run/I");
+	 mytree->Branch("Event",  &Event, "Event/I");
+	 mytree->Branch("Lumi",   &Lumi,  "Lumi/I");
+	 mytree->Branch("Bunch",  &Bunch, "Bunch/I");
+	 
+	 mytree->Branch("GenMuPt",  &GenMuPt, "GenMuPt");
+	 mytree->Branch("GenMuEta",  &GenMuEta, "GenMuEta");
+	 mytree->Branch("GenMuPhi",  &GenMuPhi, "GenMuPhi");
+	 mytree->Branch("GenMuPdgId",  &GenMuPdgId, "GenMuPdgId");
+	 mytree->Branch("GenMuCharge",  &GenMuCharge, "GenMuCharge");
+	 
+	 mytree->Branch("NGenMu", &NGenMu ,"NGenMu/I");  
+	 mytree->Branch("NMe0Mu", &NMe0Mu ,"NMe0Mu/I"); 
+	 */
+}
+
+// ------------ method called once each job just after ending the event loop  ------------
+void 
+ME0PhiAnalyzer::endJob() 
+{
+	/*
+	 rootfile->cd();
+	 mytree->Write();
+	 rootfile->Close();*/
+	
+}
+
+// ------------ method called when starting to processes a run  ------------
+
+//void ME0PhiAnalyzer::beginRun(edm::Run const&, edm::EventSetup const&)
+//{
+
+
+
+// ------------ method called when ending the processing of a run  ------------
+/*
+ void 
+ ME0PhiAnalyzer::endRun(edm::Run const&, edm::EventSetup const&)
+ {
+ }
+ */
+
+// ------------ method called when starting to processes a luminosity block  ------------
+/*
+ void 
+ ME0PhiAnalyzer::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+ {
+ }
+ */
+
+// ------------ method called when ending the processing of a luminosity block  ------------
+/*
+ void 
+ ME0PhiAnalyzer::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+ {
+ }
+ */
+
+// ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
+void
+ME0PhiAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+	//The following says we do not know what parameters are allowed so do no validation
+	// Please change this to state exactly what you do use, even if it is no parameters
+	edm::ParameterSetDescription desc;
+	desc.setUnknown();
+	descriptions.addDefault(desc);
+}
+
+//define this as a plug-in
+DEFINE_FWK_MODULE(ME0PhiAnalyzer);
