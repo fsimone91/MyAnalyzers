@@ -4,20 +4,46 @@ import copy
 from HLTrigger.HLTfilters.hltHighLevel_cfi import *
 from PhysicsTools.PatAlgos.producersLayer1.genericParticleProducer_cfi import patGenericParticles
 from PhysicsTools.PatAlgos.producersLayer1.muonProducer_cfi import patMuons
-
+from PhysicsTools.PatAlgos.selectionLayer1.muonSelector_cfi import *
+#from PhysicsTools.PatAlgos.triggerLayer1.triggerEventProducer_cfi import *
+#from PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi import *
+#from PhysicsTools.PatAlgos.tools.trigTools import *
 
 Tau3MuHLTFilter = copy.deepcopy(hltHighLevel)
 Tau3MuHLTFilter.throw = cms.bool(False)
 Tau3MuHLTFilter.HLTPaths = ["HLT_DoubleMu3_Trk_Tau3mu*", "HLT_DoubleMu3_TkMu_DsTau3Mu_v*", "HLT_DoubleMu3_Trk_Tau3mu_NoL1Mass_v*"]
 #list taken from https://github.com/cms-sw/cmssw/blob/CMSSW_9_2_X/HLTrigger/Configuration/tables/GRun.txt
 
+
+PatMuons = patMuons.clone(
+    src = cms.InputTag("muons"),
+    useParticleFlow = cms.bool( False ),
+    #embedHighLevelSelection = cms.bool(True),
+    computeMiniIso = cms.bool(False), 
+    computeMuonMVA= cms.bool(False),
+    computeSoftMuonMVA = cms.bool(True),
+    addTriggerMatching = cms.bool(True),
+    addGenMatch   = cms.bool(False),
+    embedGenMatch = cms.bool(False),
+)
+
+
+#selectedPatMuons.src = cms.InputTag("PatMuons")
+
+
+
+
+#patTrigger.onlyStandAlone = cms.bool( True )
+##patTrigger.addL1Algos =cms.bool( False )
+
+
 """
 muonTriggerMatchHLTMuons = cms.EDProducer(
   # matching in DeltaR, sorting by best DeltaR
   "PATTriggerMatcherDRDPtLessByR"
   # matcher input collections
-, src     = cms.InputTag( 'slimmedMuons' )
-, matched = cms.InputTag( 'selectedPatTrigger' )
+, src     = cms.InputTag( 'selectedPatMuons' )
+, matched = cms.InputTag( 'patTrigger' )
   # selections of trigger objects
 , matchedCuts = cms.string( 'type( "TriggerMuon" ) && path("HLT_DoubleMu3_TkMu_DsTau3Mu_v*" )' )
   # selection of matches
@@ -29,9 +55,8 @@ muonTriggerMatchHLTMuons = cms.EDProducer(
 , resolveByMatchQuality = cms.bool( False )
 )
 """
-
 looseMuons = cms.EDFilter("PATMuonSelector",
-                          src = cms.InputTag("slimmedMuons"),
+                          src = cms.InputTag("PatMuons"),
                           #cut = cms.string('pt > 0.5 &&  abs(eta)<2.4 && (innerTrack().isNonnull) && (charge!=0) && (innerTrack().hitPattern().numberOfValidPixelHits()>0) && innerTrack.quality("highPurity")'), 
                           cut = cms.string('pt > 0.5 &&  abs(eta)<2.4 && (innerTrack().isNonnull) && (charge!=0) && (innerTrack().hitPattern().numberOfValidPixelHits()>0)'), 
                           filter = cms.bool(True)                                
@@ -65,28 +90,28 @@ ThreeMuonsVtxKalmanFit = cms.EDProducer("KalmanVertexFitCompositeCandProducer",
 
 
 ########################Define Histograms########################
-InitialPlots = cms.EDAnalyzer('RecoMuonAnalyzer',
-                                   muonsInputTag = cms.InputTag("slimmedMuons"),
+InitialPlots = cms.EDAnalyzer('SimpleEventCounter',
+                                   muonsInputTag = cms.InputTag("muons"),
                                    )
 
 PlotsMatchedMuonsHLT = cms.EDAnalyzer('RecoMuonAnalyzer',
-                                   muonsInputTag = cms.InputTag("slimmedMuons"),
+                                   muonsInputTag = cms.InputTag("PatMuons"),
                                    )
 
 PlotsAfterTrigger = cms.EDAnalyzer('RecoMuonAnalyzer',
-                                   muonsInputTag = cms.InputTag("slimmedMuons"),
+                                   muonsInputTag = cms.InputTag("PatMuons"),
                                    )
 
 PlotsAfterLooseMuon = cms.EDAnalyzer('RecoMuonAnalyzer',
-                                   muonsInputTag = cms.InputTag("slimmedMuons"),
+                                   muonsInputTag = cms.InputTag("looseMuons"),
                                    )
 
 PlotsAfter3Muons = cms.EDAnalyzer('RecoMuonAnalyzer',
-                                   muonsInputTag = cms.InputTag("slimmedMuons"),
+                                   muonsInputTag = cms.InputTag("looseMuons"),
                                    )
 
 PlotsAfterTauCand = cms.EDAnalyzer('RecoMuonAnalyzer',
-                                   muonsInputTag = cms.InputTag("slimmedMuons"),
+                                   muonsInputTag = cms.InputTag("looseMuons"),
                                    )
 
 
@@ -95,18 +120,23 @@ PlotsAfterTauCand = cms.EDAnalyzer('RecoMuonAnalyzer',
 
 ThreeMuonSelSeq = cms.Sequence(InitialPlots *
                                Tau3MuHLTFilter *
+                               PatMuons *
                                PlotsAfterTrigger *
+                               #selectedPatMuons *
+                               #patTrigger *
+                               #muonTriggerMatchHLTMuons 
+                               #patTriggerEvent
                                looseMuons *
-                               #ConcreteLooseMuons *
                                PlotsAfterLooseMuon *
                                ThreeMuonsFilter *
                                PlotsAfter3Muons *
                                ThreeMuonsCand *
                                ThreeMuonsCandFilter *
-                               PlotsAfterTauCand *
                                ThreeMuonsVtxKinFit *
-                               ThreeMuonsVtxKalmanFit
+                               ThreeMuonsVtxKalmanFit *
+                               PlotsAfterTauCand
                                )
+
 
 
 

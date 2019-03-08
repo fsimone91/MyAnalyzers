@@ -25,10 +25,11 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'file:/lustre/cms/store/user/rosma/DsTau3Mu/SkimTau3Mu_DsSignal_2017_v3/190213_150844/0000/file_AODSIM_88.root',
-        'file:/lustre/cms/store/user/rosma/DsTau3Mu/SkimTau3Mu_DsSignal_2017_v3/190213_150844/0000/file_AODSIM_89.root',
-        'file:/lustre/cms/store/user/rosma/DsTau3Mu/SkimTau3Mu_DsSignal_2017_v3/190213_150844/0000/file_AODSIM_9.root',
-        'file:/lustre/cms/store/user/rosma/DsTau3Mu/SkimTau3Mu_DsSignal_2017_v3/190213_150844/0000/file_AODSIM_90.root',
+        'file:/lustrehome/venditti/TestMiniAOD2017/CMSSW_9_4_4/src/SkimTools/SkimTau3Mu/file_AODSIM_test_ForTreeMaker.root'
+        #'file:/lustre/cms/store/user/rosma/DsTau3Mu/SkimTau3Mu_DsSignal_2017_v3/190213_150844/0000/file_AODSIM_88.root',
+        #'file:/lustre/cms/store/user/rosma/DsTau3Mu/SkimTau3Mu_DsSignal_2017_v3/190213_150844/0000/file_AODSIM_89.root',
+        #'file:/lustre/cms/store/user/rosma/DsTau3Mu/SkimTau3Mu_DsSignal_2017_v3/190213_150844/0000/file_AODSIM_9.root',
+        #'file:/lustre/cms/store/user/rosma/DsTau3Mu/SkimTau3Mu_DsSignal_2017_v3/190213_150844/0000/file_AODSIM_90.root',
         #'file:/lustrehome/venditti/TestMiniAOD2017/CMSSW_9_4_4/src/SkimTools/testSynch.root''
         #'file:/lustrehome/venditti/TestMiniAOD2017/CMSSW_9_4_4/src/SkimTools/SkimTau3Mu/file_AODSIM_test_ForTreeMaker.root'
         #'/store/cmst3/user/gpetrucc/miniAOD/v1/TT_Tune4C_13TeV-pythia8-tauola_PU_S14_PAT.root'
