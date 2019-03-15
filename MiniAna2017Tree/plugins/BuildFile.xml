@@ -16,6 +16,7 @@
 <use   name="RecoVertex/KinematicFit"/>
 <use   name="RecoVertex/KinematicFitPrimitives"/>
 <use name="RecoVertex/VertexPrimitives"/>
+<use name="HLTrigger/HLTcore" />
 <use   name="rootcore"/>
 <use   name="rootgraphics"/>
 <use name="Root"/>
